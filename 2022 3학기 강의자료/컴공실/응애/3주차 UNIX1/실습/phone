@@ -1,0 +1,19 @@
+# error case: run without no argument
+if [ $# -eq 0 ]
+then
+    echo "Usage: phone searchfor [...searchfor]"
+    echo "(You didn't tell me what you want to search for.)"
+    exit 0
+fi
+
+# generate the query string by concatenating arguments
+# example) arg1 arg2 arg3 ---> arg1|arg2|arg3
+query=$1
+for arg in "${@:2}"
+do
+    query=$query\|$arg
+done
+
+# print with egrep | awk
+eval 'egrep "($query)" mydata | awk -f display.awk'
+exit 0

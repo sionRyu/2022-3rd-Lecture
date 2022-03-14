@@ -1,0 +1,51 @@
+<HTML> 
+<HEAD>   
+	<meta charset='utf-8'>
+	<TITLE> ++ 자.바.스.크.립.트. ++ </TITLE> </HEAD>
+
+<BODY>
+<CENTER>
+	<table border="0" cellpadding="3" bgcolor=#000000 width=300>
+		<tr height=300>
+			<td align="center">
+				<!---- 맨처음 보여줄 이미지---->
+				<img src="images/0.jpg" name="gallery">
+			</td>
+		</tr>
+		<tr>
+			<td align="center">
+				<form name="menu">
+					<script>
+						var n_of_pic = 10;
+						var current = 0;
+						function forward() {
+							current = (current+1)%n_of_pic;
+							setImage(current);
+						}
+						function backward() {
+							if(which==1)
+								current = 0;
+							else
+								current = (current+n_of_pic-1)%n_of_pic;
+							which = 0;
+							setImage(current);
+						}
+						function home() {
+							current = 0;
+							setImage(current);
+						}
+						function setImage(index) {
+							document.gallery.src = "images/"+index+".jpg";
+						}
+					</script>
+
+					<input type="button" value="<<" onClick="backward()" /> 
+					<input type="button" value="Home" onClick="which=1;backward()" />
+					<input type="button" value=">>"  onClick="forward()" />
+				</form>
+			</td>
+		</tr>
+	</table>
+</CENTER>  
+</BODY> 
+</HTML>

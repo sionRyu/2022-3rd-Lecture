@@ -1,0 +1,2 @@
+args 들을 -a args 로 배열로 받아준 뒤 모든 args들을 arg라는 하나의 큰 문장으로 만들어준 뒤에
+(for do done) 공백을 l(egrep의 검색 구분자)로 바꿔 준 뒤 egrep에다가 넣어주기?   
