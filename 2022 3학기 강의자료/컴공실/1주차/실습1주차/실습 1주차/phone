@@ -1,0 +1,18 @@
+#!/bin/sh
+#if you didn't give any arguments.
+if [ $# -eq 0 ];
+then
+	echo "Usage: phone searchfor [...searchfor]"
+	echo "(You didn't tell me what you want to search for.)"
+	exit 0
+else
+	# Add '|' to all arguments for egrep can divide arguments.
+	args=""
+	for arg in $*; 
+	do
+		args="$args.*$arg"
+	done
+
+	eval 'egrep "($args)" mydata|awk -f display.awk'
+	exit 0
+fi
