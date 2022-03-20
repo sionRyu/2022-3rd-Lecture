@@ -3,9 +3,9 @@
 
 int main(){
 
-	void dog();
-	void blackcow();
-	void turtle();
+	dog();
+	blackcow();
+	turtle();
 
 	return 0;
 }
