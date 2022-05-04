@@ -1,6 +1,7 @@
 ﻿#include "tetris.h"
 
 static struct sigaction act, oact;
+Node *head = NULL;
 
 int main(){
 	int exit=0;
@@ -10,6 +11,8 @@ int main(){
 	keypad(stdscr, TRUE);	
 
 	srand((unsigned int)time(NULL));
+
+	createRankList();
 
 	while(!exit){
 		clear();
@@ -43,7 +46,7 @@ void InitTetris(){
 
 	DrawOutline();
 	DrawField();
-	DrawBlockWithFeatures(blockY,blockX,nextBlock[0],blockRotate);
+	DrawBlock(blockY,blockX,nextBlock[0],blockRotate,' ');
 	DrawNextBlock(nextBlock);
 	PrintScore(score);
 }
@@ -171,12 +174,6 @@ void DrawBlock(int y, int x, int blockID,int blockRotate,char tile){
 	move(HEIGHT,WIDTH+10);
 }
 
-void DrawBlockWithFeatures(int y, int x, int blockID, int blockRotate)
-{
-	DrawShadow(y, x, blockID, blockRotate);
-	DrawBlock(y, x, blockID, blockRotate, ' ');
-}
-
 void DrawBox(int y,int x, int height, int width){
 	int i,j;
 	move(y,x);
@@ -273,7 +270,6 @@ void DrawChange(char f[HEIGHT][WIDTH],int command,int currentBlock,int blockRota
 
 	switch (command)
 	{
-		int n = 1;
 		case KEY_UP:
 			for (int i = 0; i < BLOCK_HEIGHT; i++)
 			{
@@ -282,13 +278,7 @@ void DrawChange(char f[HEIGHT][WIDTH],int command,int currentBlock,int blockRota
 					// 블록이 이전것으로 되기 위해서 +3 해준뒤 4로 나눠주면 그전과 같게 됨
 					if (block[currentBlock][(blockRotate+3)%4][i][j] == 1)
 					{
-						while (CheckToMove(field, nextBlock[0], (blockRotate + 3) % 4, blockY + n, blockX+1))
-						{
-							n++;
-						}
 						move(i + blockY+1, j + blockX+1);
-						printw("%c", remove_Block);
-						move(i + blockY + n, j + blockX + 1);
 						printw("%c", remove_Block);
 					}
 				}
@@ -313,15 +303,9 @@ void DrawChange(char f[HEIGHT][WIDTH],int command,int currentBlock,int blockRota
 			{
 				for (int j = 0; j < BLOCK_WIDTH; j++)
 				{
-					while (CheckToMove(field, nextBlock[0], blockRotate, blockY + n, blockX))
-					{
-						n++;
-					}
 					if (block[currentBlock][blockRotate][i][j] == 1)
 					{
 						move(i + blockY+1, j + blockX);
-						printw("%c", remove_Block);
-						move(i + blockY + n , j + blockX);
 						printw("%c", remove_Block);
 					}
 				}
@@ -332,21 +316,15 @@ void DrawChange(char f[HEIGHT][WIDTH],int command,int currentBlock,int blockRota
 			{
 				for (int j = 0; j < BLOCK_WIDTH; j++)
 				{
-					while (CheckToMove(field, nextBlock[0], blockRotate, blockY + n, blockX+2))
-					{
-						n++;
-					}
 					if (block[currentBlock][blockRotate][i][j] == 1)
 					{
 						move(i + blockY+1, j + blockX +2);
-						printw("%c", remove_Block);
-						move(i + blockY + n, j + blockX +2);
 						printw("%c", remove_Block);
 					}
 				}
 			}
 	}
-	DrawBlockWithFeatures(blockY, blockX, currentBlock, blockRotate);
+	DrawBlock(blockY, blockX, currentBlock, blockRotate, ' ');
 
 	//1. 이전 블록 정보를 찾는다. ProcessCommand의 switch문을 참조할 것
 	//2. 이전 블록 정보를 지운다. DrawBlock함수 참조할 것.
@@ -435,29 +413,131 @@ int DeleteLine(char f[HEIGHT][WIDTH]){
 ///////////////////////////////////////////////////////////////////////////
 
 void DrawShadow(int y, int x, int blockID,int blockRotate){
-	int n = 0;
-	while (CheckToMove(field, nextBlock[0], blockRotate, blockY + n, blockX))
-	{
-		n++;
-	}
-	DrawBlock(y + n-1, x, blockID, blockRotate, '/');
+	
 }
 
+///////////////////////////////////////////////////////////////////////////
 void createRankList(){
-	// user code
+	int repeat = 0,score = 0;
+	char name[NAMELEN];
+	
+	FILE *fp;
+	fp = fopen("rank.txt", "r");
+	fscanf(fp, "%d", &repeat);
+	
+	Node *now;
+	Node *next;
+	if (repeat == 0)
+	{
+		head->link = NULL;
+	}
+	else
+	{
+		now = (Node*)malloc(sizeof(Node));
+		head->link = now;
+		fscanf(fp, "%s %d", name, &score);
+		strcpy(now->name, name);
+		now->score = score;
+		repeat--;
+		if (repeat == 0)
+		{
+			now->link = NULL;
+		}
+
+		while (repeat == 0)
+		{
+			fscanf(fp, "%s %d", name, &score);
+			next = (Node*)malloc(sizeof(Node));
+			now->link = next;
+			next->link = NULL;
+			strcpy(next->name, name);
+			next->score = score;
+			now = now->link;
+			repeat--;
+		}
+	}
+	fclose(fp);
 }
 
 void rank(){
-	// user code
+	clear();
+	int x = 0, y = 0;
+	printw("1. list ranks from X to Y\n");
+	printw("2. list ranks by a specific name\n");
+	printw("3. delete a specific rank\n");
+
+	if (wgetch(stdscr) == 1)
+	{
+		echo();
+		printw("X: ");
+		scanw("%d", &x);
+		printw("Y: ");
+		scanw("%d", &y);
+		noecho();
+
+		if (x>y || x<0 || y<0)
+		{
+			printw("search failure: no rank in the list\n");
+			return;
+		}
+		int count = 0;
+		if (x<=y&&!(x==0&&y==0))
+		{
+			Node *now;
+			now = head;
+			count = x;
+			for (int i = 1; i < count; i++)
+			{
+				now = now->link;
+			}
+			while (count <= y)
+			{
+				printw(" %-15s | %d\n",now->name,now->score);
+				now = now->link;
+				count++;
+			}
+		}
+		else if(x==0&&y==0)
+		{
+			Node *now;
+			now = head;
+			printw(" %-15s | %d\n", now->name, now->score);
+			while (now->link!=NULL)
+			{
+				now = now->link;
+				printw(" %-15s | %d\n", now->name, now->score);
+			}
+		}
+		else
+		{
+
+			Node *now;
+			now = head;
+			count = x;
+			for (int i = 1; i < count; i++)
+			{
+				now = now->link;
+			}
+			while (count < y)
+			{
+				printw(" %-15s | %d\n", now->name, now->score);
+				now = now->link;
+				count++;
+			}
+		}
+
+	}
 }
 
 void writeRankFile(){
-	// user code
+
 }
 
 void newRank(int score){
 	// user code
 }
+
+///////////////////////////////////////////////////////////////////////////
 
 void DrawRecommend(int y, int x, int blockID,int blockRotate){
 	// user code

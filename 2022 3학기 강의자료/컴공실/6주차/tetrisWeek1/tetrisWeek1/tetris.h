@@ -21,12 +21,19 @@
 
 // menu number
 #define MENU_PLAY '1'
+#define MENU_RANK '2'
 #define MENU_EXIT '4'
 
 // 사용자 이름의 길이
 #define NAMELEN 16
 
 #define CHILDREN_MAX 36
+
+typedef struct _Node {
+	char name[NAMELEN];
+	int score;
+	struct _Node *link;
+}Node;
 
 typedef struct _RecNode{
 	int lv,score;
@@ -144,8 +151,6 @@ int gameOver=0;			/* 게임이 종료되면 1로 setting된다.*/
 int timed_out;
 int recommendR,recommendY,recommendX; // 추천 블럭 배치 정보. 차례대로 회전, Y 좌표, X 좌표
 RecNode *recRoot;
-
-void DrawBlockWithFeatures(int y, int x, int blockID, int blockRotate);
 
 /***********************************************************
  *	테트리스의 모든  global 변수를 초기화 해준다.
